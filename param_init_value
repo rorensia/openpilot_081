@@ -5,6 +5,7 @@ OpkrEnableDriverMonitoring:1
 OpkrEnableLogger:0
 OpkrEnableGetoffAlert:1
 OpkrAutoResume:1
+OpkrVariableCruise:0
 OpkrLaneChangeSpeed:60
 OpkrAutoLaneChangeDelay:0
 OpkrSteerAngleCorrection:0
@@ -55,6 +56,7 @@ OpkrLiveSteerRatio:0
 OpkrVariableSteerMax:1
 OpkrVariableSteerDelta:0
 FingerprintTwoSet:1
+OpkrVariableCruiseProfile:0
 OpkrLiveTune:0
 OpkrEnableMap:1
 OpkrDrivingRecord:0

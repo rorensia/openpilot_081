@@ -18,14 +18,6 @@ class Spdctrl(SpdController):
         super().__init__( CP )
         self.cv_Raio = 0.4
         self.cv_Dist = -5
-        self.steer_mode = ""
-        self.cruise_gap = 0.0
-        self.cut_in = False
-        self.osm_enable = False
-        self.osm_spdlimit_offset = 0
-        self.target_speed = 0
-        self.target_speed_road = 0
-        self.target_speed_camera = 0
 
     def update_lead(self, sm, CS, dRel, yRel, vRel):
         plan = sm['plan']
@@ -153,7 +145,7 @@ class Spdctrl(SpdController):
 
         # 2. 커브 감속.
         #if self.cruise_set_speed_kph >= 100:
-        if CS.out.cruiseState.modeSel == 1 and Events().names not in [EventName.laneChangeManual, EventName.laneChange]:
+        if int(Params().get('LimitSetSpeedCurv')) == 1 and Events().names not in [EventName.laneChangeManual, EventName.laneChange]:
             if model_speed < 60 and CS.clu_Vanz > 40 and CS.lead_distance >= 15:
                 set_speed = self.cruise_set_speed_kph - int(CS.clu_Vanz * 0.2)
                 self.seq_step_debug = "커브감속-4"

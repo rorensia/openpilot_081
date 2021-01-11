@@ -11,7 +11,6 @@ from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 
 from selfdrive.car.hyundai.values import Buttons, SteerLimitParams
 from common.numpy_fast import clip, interp
-from common.params import Params
 
 from selfdrive.config import RADAR_TO_CAMERA
 
@@ -31,9 +30,6 @@ class SpdController():
         self.path_x = np.arange(192)
 
         self.traceSC = trace1.Loger("SPD_CTRL")
-
-        self.wheelbase = 2.8
-        self.steerRatio = 13.5  # 13.5
 
         self.v_model = 0
         self.a_model = 0
@@ -60,12 +56,6 @@ class SpdController():
         self.btn_type = Buttons.NONE
         self.active_time = 0
 
-        self.params = Params()
-        self.cruise_set_mode = int(self.params.get('CruiseStatemodeSelInit'))
-
-        self.osm_spd_enable = False
-        self.osm_spd_enable_camera = False
-        self.osm_spd_limit_offset = 0
 
     def reset(self):
         self.v_model = 0
@@ -148,19 +138,12 @@ class SpdController():
             self.curise_set_first = 1
             self.prev_VSetDis = int(CS.VSetDis)
             set_speed_kph = int(CS.VSetDis)
-            if self.prev_clu_CruiseSwState != CS.cruise_buttons:  # MODE change
-                if CS.cruise_buttons == Buttons.GAP_DIST and not CS.acc_active and CS.out.cruiseState.available:
-                    self.cruise_set_mode += 1
-                if self.cruise_set_mode > 3:
-                    self.cruise_set_mode = 0
-                self.prev_clu_CruiseSwState = CS.cruise_buttons
-            
 
         if set_speed_kph <= 10:
             set_speed_kph = 10
 
         self.cruise_set_speed_kph = set_speed_kph
-        return self.cruise_set_mode, set_speed_kph
+        return set_speed_kph
 
 
     @staticmethod
@@ -235,8 +218,8 @@ class SpdController():
 
         if set_speed >= int(round(self.cruise_set_speed_kph)):
             set_speed = int(round(self.cruise_set_speed_kph))
-        elif set_speed <= 30:
-            set_speed = 30
+        elif set_speed <= 10:
+            set_speed = 10
 
         # control process
         target_set_speed = set_speed
@@ -272,7 +255,9 @@ class SpdController():
         else:
             btn_type, clu_speed, active_time = self.lead_control( CS, sm, CC )   # speed controller spdcontroller.py
 
-            if self.btn_type != Buttons.NONE:
+            if 0 <= int(CS.clu_Vanz) <= 20) and CC.vRel <= 0:
+                self.btn_type = Buttons.NONE
+            elif self.btn_type != Buttons.NONE:
                 pass
             elif btn_type != Buttons.NONE:
                 self.resume_cnt = 0

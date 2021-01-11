@@ -37,7 +37,6 @@ class CarState(CarStateBase):
     self.leftblinkerflashdebounce = 0
     self.rightblinkerflashdebounce = 0
 
-    self.cruiseState_modeSel = 0
     self.SC = SpdController()
 
     self.brake_check = 0
@@ -104,6 +103,7 @@ class CarState(CarStateBase):
 
     self.VSetDis = cp_scc.vl["SCC11"]['VSetDis']
     ret.vSetDis = self.VSetDis
+    self.clu_Vanz = ret.vEgo * CV.MS_TO_KPH
     lead_objspd = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
     self.lead_objspd = lead_objspd * CV.MS_TO_KPH
     self.driverOverride = cp.vl["TCS13"]["DriverOverride"]
@@ -156,8 +156,7 @@ class CarState(CarStateBase):
 
     self.acc_active = ret.cruiseState.enabled
 
-    self.cruiseState_modeSel, speed_kph = self.SC.update_cruiseSW(self)
-    ret.cruiseState.modeSel = self.cruiseState_modeSel
+    speed_kph = self.SC.update_cruiseSW(self)
     
     if ret.cruiseState.enabled and (self.brake_check == 0 or self.mainsw_check == 0):
       speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
