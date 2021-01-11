@@ -16,6 +16,8 @@ from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
 
 # speed controller
 from selfdrive.car.hyundai.spdcontroller  import SpdController
+from selfdrive.car.hyundai.spdctrl  import Spdctrl
+from selfdrive.car.hyundai.spdctrlRelaxed  import SpdctrlRelaxed
 
 from common.params import Params
 import common.log as trace1
@@ -123,9 +125,27 @@ class CarController():
 
     self.timer1 = tm.CTime1000("time")
 
-    self.SC = SpdController()
+    if int(self.params.get('OpkrVariableCruiseProfile')) == 0:
+      self.SC = Spdctrl()
+    elif int(self.params.get('OpkrVariableCruiseProfile')) == 1:
+      self.SC = SpdctrlRelaxed()
+    else:
+      self.SC = Spdctrl()
+
     self.model_speed = 0
     self.model_sum = 0
+
+    self.dRel = 0
+    self.yRel = 0
+    self.vRel = 0
+    self.dRel2 = 0
+    self.yRel2 = 0
+    self.vRel2 = 0
+    self.lead2_status = False
+    self.cut_in_detection = 0
+    self.target_map_speed = 0
+    self.target_map_speed_camera = 0
+    self.v_set_dis_prev = 180
     self.model_speed_range = [30, 90, 255, 300]
     self.steerMax_range = [SteerLimitParams.STEER_MAX, int(self.params.get('SteerMaxBaseAdj')), int(self.params.get('SteerMaxBaseAdj')), 0]
     self.steerDeltaUp_range = [5, int(self.params.get('SteerDeltaUpAdj')), int(self.params.get('SteerDeltaUpAdj')), 0]
@@ -165,8 +185,20 @@ class CarController():
     param = self.p
 
     self.model_speed, self.model_sum = self.SC.calc_va(sm, CS.out.vEgo)
+
+    plan = sm['plan']
+    self.dRel = int(plan.dRel1) #EON Lead
+    self.yRel = int(plan.yRel1) #EON Lead
+    self.vRel = int(plan.vRel1 * 3.6 + 0.5) #EON Lead
+    self.dRel2 = int(plan.dRel2) #EON Lead
+    self.yRel2 = int(plan.yRel2) #EON Lead
+    self.vRel2 = int(plan.vRel2 * 3.6 + 0.5) #EON Lead
+    self.lead2_status = plan.status2
+    self.target_map_speed = plan.targetSpeed
+    self.target_map_speed_camera = plan.targetSpeedCamera
     path_plan = sm['pathPlan']
     self.outScale = path_plan.outputScale
+    self.vCruiseSet = path_plan.vCruiseSet
 
     if CS.out.vEgo > 8:
       if self.variable_steer_max:

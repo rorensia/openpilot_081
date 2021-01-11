@@ -9,6 +9,8 @@ from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES, ELEC_VE
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
+from selfdrive.car.hyundai.spdcontroller  import SpdController
+from selfdrive.car.hyundai.values import Buttons
 from common.params import Params
 
 GearShifter = car.CarState.GearShifter
@@ -34,6 +36,9 @@ class CarState(CarStateBase):
     self.cancel_button_timer = 0
     self.leftblinkerflashdebounce = 0
     self.rightblinkerflashdebounce = 0
+
+    self.cruiseState_modeSel = 0
+    self.SC = SpdController()
 
     self.brake_check = 0
     self.mainsw_check = 0
@@ -96,6 +101,14 @@ class CarState(CarStateBase):
 
     ret.steerWarning = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0
 
+
+    self.VSetDis = cp_scc.vl["SCC11"]['VSetDis']
+    ret.vSetDis = self.VSetDis
+    lead_objspd = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
+    self.lead_objspd = lead_objspd * CV.MS_TO_KPH
+    self.driverOverride = cp.vl["TCS13"]["DriverOverride"]
+
+
     ret.brakeHold = cp.vl["ESP11"]['AVH_STAT'] == 1
     self.brakeHold = ret.brakeHold
 
@@ -140,6 +153,12 @@ class CarState(CarStateBase):
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4.
 
     self.is_set_speed_in_mph = cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"]
+
+    self.acc_active = ret.cruiseState.enabled
+
+    self.cruiseState_modeSel, speed_kph = self.SC.update_cruiseSW(self)
+    ret.cruiseState.modeSel = self.cruiseState_modeSel
+    
     if ret.cruiseState.enabled and (self.brake_check == 0 or self.mainsw_check == 0):
       speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
       if self.CP.radarOffCan:
@@ -148,6 +167,10 @@ class CarState(CarStateBase):
         ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv
     else:
       ret.cruiseState.speed = 0
+
+    self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
+    self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
+    ret.cruiseButtons = self.cruise_buttons
 
     if self.cruise_main_button != 0:
       self.mainsw_check = 1
