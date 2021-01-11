@@ -39,6 +39,8 @@ class CarState(CarStateBase):
 
     self.SC = SpdController()
 
+    self.driverAcc_time = 0
+
     self.brake_check = 0
     self.mainsw_check = 0
     self.steer_anglecorrection = int(Params().get('OpkrSteerAngleCorrection')) * 0.1
@@ -107,7 +109,10 @@ class CarState(CarStateBase):
     lead_objspd = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
     self.lead_objspd = lead_objspd * CV.MS_TO_KPH
     self.driverOverride = cp.vl["TCS13"]["DriverOverride"]
-
+    if self.driverOverride == 1:
+      self.driverAcc_time = 100
+    elif self.driverAcc_time:
+      self.driverAcc_time -= 1
 
     ret.brakeHold = cp.vl["ESP11"]['AVH_STAT'] == 1
     self.brakeHold = ret.brakeHold
