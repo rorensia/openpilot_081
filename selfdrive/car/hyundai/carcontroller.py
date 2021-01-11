@@ -119,6 +119,7 @@ class CarController():
     
     self.params = Params()
     self.gapsettingdance = int(self.params.get('OpkrCruiseGapSet'))
+    self.opkr_variablecruise = int(self.params.get('OpkrVariableCruise'))
     self.opkr_autoresume = int(self.params.get('OpkrAutoResume'))
 
     self.opkr_maxanglelimit = int(self.params.get('OpkrMaxAngleLimit'))
@@ -325,6 +326,8 @@ class CarController():
 
     trace1.printf1('{}  {}'.format(str_log1, self.str_log2))
 
+    run_speed_ctrl = self.opkr_variablecruise and CS.acc_active
+
     if pcm_cancel_cmd and CS.scc12["ACCMode"] != 0 and not CS.out.standstill:
       self.vdiff = 0.
       self.resumebuttoncnt = 0
@@ -337,6 +340,10 @@ class CarController():
         if self.resumebuttoncnt > 5:
           self.lastresumeframe = frame
           self.resumebuttoncnt = 0
+    elif run_speed_ctrl:
+      is_sc_run = self.SC.update(CS, sm, self)
+      if is_sc_run:
+        can_sends.append(create_clu11(self.packer, CS.CP.sccBus, CS.clu11, self.SC.btn_type, self.SC.sc_clu_speed, self.clu11_cnt))
     else:
       self.vdiff = 0.
       self.resumebuttoncnt = 0
