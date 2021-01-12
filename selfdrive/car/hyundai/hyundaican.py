@@ -78,17 +78,18 @@ def create_clu11(packer, frame, bus, clu11, button, speed):
   values["CF_Clu_AliveCnt1"] = frame % 0x10
   return packer.make_can_msg("CLU11", bus, values)
 
-def create_lfahda_mfc(packer, lfahda_mfc, enabled, hda_set_speed=0):
-  values = copy.copy(lfahda_mfc)
+def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
   values = {
     #"LFA_USM": lfahda_mfc["LFA_USM"],
-    "LFA_USM": 2,
+    #"LFA_USM": 2,
     "LFA_Icon_State": 2 if enabled else 0,
-    "LFA_SysWarning": 0,
+    #"LFA_SysWarning": 0,
     #"HDA_USM": lfahda_mfc["HDA_USM"],
     "HDA_USM": 2,
-    "HDA_Active": 1 if hda_set_speed else 0,
-    "HDA_Icon_State": 2 if hda_set_speed else 0,
+    #"HDA_Active": 1 if hda_set_speed else 0,
+    "HDA_Active": 1 if enabled else 0,
+    #"HDA_Icon_State": 2 if hda_set_speed else 0,
+    "HDA_Icon_State": 2 if enabled else 0,
     "HDA_VSetReq": hda_set_speed,
 
     #"HDA_USM": 2,

@@ -518,7 +518,7 @@ class CarController():
 
     # 20 Hz LFA MFA message
     if frame % 5 == 0 and self.car_fingerprint in FEATURES["send_lfa_mfa"]:
-      can_sends.append(create_lfahda_mfc(self.packer, CS.lfahda_mfc, enabled))
+      can_sends.append(create_lfahda_mfc(self.packer, enabled))
 
     if CS.spas_enabled:
       if CS.mdps_bus:
