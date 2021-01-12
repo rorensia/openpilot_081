@@ -81,10 +81,12 @@ def create_clu11(packer, frame, bus, clu11, button, speed):
 def create_lfahda_mfc(packer, lfahda_mfc, enabled, hda_set_speed=0):
   values = copy.copy(lfahda_mfc)
   values = {
-    "LFA_USM": lfahda_mfc["LFA_USM"],
+    #"LFA_USM": lfahda_mfc["LFA_USM"],
+    "LFA_USM": 2,
     "LFA_Icon_State": 2 if enabled else 0,
     "LFA_SysWarning": 0,
-    "HDA_USM": lfahda_mfc["HDA_USM"],
+    #"HDA_USM": lfahda_mfc["HDA_USM"],
+    "HDA_USM": 2,
     "HDA_Active": 1 if hda_set_speed else 0,
     "HDA_Icon_State": 2 if hda_set_speed else 0,
     "HDA_VSetReq": hda_set_speed,
